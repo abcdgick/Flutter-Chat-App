@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_chat_app/db/account.dart';
+import 'package:flutter_chat_app/screen/home_screen.dart';
 import 'package:flutter_chat_app/screen/signup_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -15,6 +17,7 @@ class _LoginScreenState extends State<LoginScreen> {
   TextEditingController password = TextEditingController();
 
   bool _passwordVisible = false;
+  bool _isLoading = false;
   @override
   void initState() {
     super.initState();
@@ -23,73 +26,95 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        body: SingleChildScrollView(
-      child: Container(
-          alignment: Alignment.center,
-          padding: const EdgeInsets.all(50),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                Image.asset(
-                  'image/Messages.png',
-                  height: 180,
-                  width: 180,
-                ),
-                sep(15),
-                const Text(
-                  "Flutter Chat App",
-                  style: TextStyle(
-                      color: Colors.blueGrey,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 28),
-                ),
-                sep(30),
-                textFormEmail(const Icon(Icons.email, color: Colors.blueGrey),
-                    "Email", "Please enter you email", email),
-                sep(10),
-                textFormPass(),
-                sep(30),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blueGrey,
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20)),
-                        shadowColor: Colors.black,
-                        elevation: 10,
-                        padding: const EdgeInsets.all(20)),
-                    child: const Text('LOGIN',
-                        style: TextStyle(color: Colors.white, fontSize: 20)),
-                    onPressed: () {
-                      if (_formKey.currentState!.validate()) {
-                      } else {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                                content: Text(
-                                    'Please fill all the field correctly')));
-                      }
-                    },
+    if (_isLoading) {
+      return const LoadingPage();
+    } else {
+      return Scaffold(
+          body: SingleChildScrollView(
+        child: Container(
+            alignment: Alignment.center,
+            padding: const EdgeInsets.all(50),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Image.asset(
+                    'image/Messages.png',
+                    height: 180,
+                    width: 180,
                   ),
-                ),
-                sep(10),
-                GestureDetector(
-                  onTap: () => Navigator.of(context).push(MaterialPageRoute(
-                      builder: (context) => const SignUpScreen())),
-                  child: const Text('or create an account',
-                      style: TextStyle(
-                          color: Colors.blueGrey,
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold)),
-                )
-              ],
-            ),
-          )),
-    ));
+                  sep(15),
+                  const Text(
+                    "Flutter Chat App",
+                    style: TextStyle(
+                        color: Colors.blueGrey,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 28),
+                  ),
+                  sep(30),
+                  textFormEmail(const Icon(Icons.email, color: Colors.blueGrey),
+                      "Email", "Please enter you email", email),
+                  sep(10),
+                  textFormPass(),
+                  sep(30),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blueGrey,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20)),
+                          shadowColor: Colors.black,
+                          elevation: 10,
+                          padding: const EdgeInsets.all(20)),
+                      child: const Text('LOGIN',
+                          style: TextStyle(color: Colors.white, fontSize: 20)),
+                      onPressed: () {
+                        if (_formKey.currentState!.validate()) {
+                          setState(() {
+                            _isLoading = true;
+                          });
+
+                          login(email.text, password.text).then(
+                            (value) {
+                              if (value != null) {
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: ((context) =>
+                                            const HomeScreen())));
+                              } else {}
+                              setState(() {
+                                _isLoading = false;
+                              });
+                            },
+                          );
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                  content: Text(
+                                      'Please fill all the field correctly')));
+                        }
+                      },
+                    ),
+                  ),
+                  sep(10),
+                  GestureDetector(
+                    onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                        builder: (context) => const SignUpScreen())),
+                    child: const Text('or create an account',
+                        style: TextStyle(
+                            color: Colors.blueGrey,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold)),
+                  )
+                ],
+              ),
+            )),
+      ));
+    }
   }
 
   Widget textFormEmail(

@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/src/widgets/container.dart';
 import 'package:flutter/src/widgets/framework.dart';
+import 'package:flutter_chat_app/db/account.dart';
+import 'package:flutter_chat_app/screen/home_screen.dart';
 import 'package:flutter_chat_app/screen/login_screen.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -18,6 +21,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   TextEditingController password = TextEditingController();
 
   bool _passwordVisible = false;
+  bool _isLoading = false;
   @override
   void initState() {
     super.initState();
@@ -26,79 +30,97 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        body: SingleChildScrollView(
-      child: Container(
-          alignment: Alignment.center,
-          padding: const EdgeInsets.all(50),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                Image.asset(
-                  'image/Messages.png',
-                  height: 180,
-                  width: 180,
-                ),
-                sep(15),
-                const Text(
-                  "Flutter Chat App",
-                  style: TextStyle(
-                      color: Colors.blueGrey,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 28),
-                ),
-                sep(30),
-                textFormBiasa(
-                    const Icon(Icons.text_format, color: Colors.blueGrey),
-                    "Name",
-                    "Please enter you name",
-                    name),
-                sep(10),
-                textFormEmail(const Icon(Icons.email, color: Colors.blueGrey),
-                    "Email", "Please enter you email", email),
-                sep(10),
-                textFormPass(),
-                sep(30),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blueGrey,
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20)),
-                        shadowColor: Colors.black,
-                        elevation: 10,
-                        padding: const EdgeInsets.all(20)),
-                    child: const Text('SIGNUP',
-                        style: TextStyle(color: Colors.white, fontSize: 20)),
-                    onPressed: () {
-                      if (_formKey.currentState!.validate()) {
-                      } else {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                                content: Text(
-                                    'Please fill all the field correctly')));
-                      }
-                    },
+    if (_isLoading) {
+      return const LoadingPage();
+    } else {
+      return Scaffold(
+          body: SingleChildScrollView(
+        child: Container(
+            alignment: Alignment.center,
+            padding: const EdgeInsets.all(50),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Image.asset(
+                    'image/Messages.png',
+                    height: 180,
+                    width: 180,
                   ),
-                ),
-                sep(10),
-                GestureDetector(
-                  onTap: () => Navigator.of(context).push(MaterialPageRoute(
-                      builder: (context) => const LoginScreen())),
-                  child: const Text('or login instead',
-                      style: TextStyle(
-                          color: Colors.blueGrey,
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold)),
-                )
-              ],
-            ),
-          )),
-    ));
+                  sep(15),
+                  const Text(
+                    "Flutter Chat App",
+                    style: TextStyle(
+                        color: Colors.blueGrey,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 28),
+                  ),
+                  sep(30),
+                  textFormBiasa(
+                      const Icon(Icons.text_format, color: Colors.blueGrey),
+                      "Name",
+                      "Please enter you name",
+                      name),
+                  sep(10),
+                  textFormEmail(const Icon(Icons.email, color: Colors.blueGrey),
+                      "Email", "Please enter you email", email),
+                  sep(10),
+                  textFormPass(),
+                  sep(30),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blueGrey,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20)),
+                          shadowColor: Colors.black,
+                          elevation: 10,
+                          padding: const EdgeInsets.all(20)),
+                      child: const Text('SIGNUP',
+                          style: TextStyle(color: Colors.white, fontSize: 20)),
+                      onPressed: () {
+                        if (_formKey.currentState!.validate()) {
+                          setState(() {
+                            _isLoading = true;
+                          });
+
+                          createAccount(name.text, email.text, password.text)
+                              .then((value) {
+                            if (value != null) {
+                              MaterialPageRoute(
+                                  builder: ((context) => const HomeScreen()));
+                            } else {}
+                            setState(() {
+                              _isLoading = false;
+                            });
+                          });
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                  content: Text(
+                                      'Please fill all the field correctly')));
+                        }
+                      },
+                    ),
+                  ),
+                  sep(10),
+                  GestureDetector(
+                    onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                        builder: (context) => const LoginScreen())),
+                    child: const Text('or login instead',
+                        style: TextStyle(
+                            color: Colors.blueGrey,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold)),
+                  )
+                ],
+              ),
+            )),
+      ));
+    }
   }
 
   Widget textFormBiasa(
@@ -225,5 +247,27 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   Widget sep(double h) {
     return SizedBox(height: h);
+  }
+}
+
+class LoadingPage extends StatelessWidget {
+  const LoadingPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.blueGrey,
+      body: Center(
+          child: SpinKitCircle(
+        size: 100,
+        itemBuilder: ((context, index) {
+          final colors = [Colors.blue, Colors.white];
+          final color = colors[index % colors.length];
+
+          return DecoratedBox(
+              decoration: BoxDecoration(color: color, shape: BoxShape.circle));
+        }),
+      )),
+    );
   }
 }
