@@ -11,7 +11,7 @@ class Redirect extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (_auth.currentUser != null) {
-      return const HomeScreen();
+      return HomeScreen();
     } else {
       return const WelcomeScreen();
     }

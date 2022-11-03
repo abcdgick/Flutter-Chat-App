@@ -57,7 +57,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         fontWeight: FontWeight.bold,
                         fontSize: 28),
                   ),
-                  sep(30),
+                  sep(35),
                   textFormBiasa(
                       const Icon(Icons.text_format, color: Colors.blueGrey),
                       "Name",
@@ -90,8 +90,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           createAccount(name.text, email.text, password.text)
                               .then((value) {
                             if (value != null) {
-                              MaterialPageRoute(
-                                  builder: ((context) => const HomeScreen()));
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: ((context) => HomeScreen())));
                             } else {}
                             setState(() {
                               _isLoading = false;

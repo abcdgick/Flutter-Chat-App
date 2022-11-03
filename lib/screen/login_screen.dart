@@ -53,7 +53,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         fontWeight: FontWeight.bold,
                         fontSize: 28),
                   ),
-                  sep(30),
+                  sep(35),
                   textFormEmail(const Icon(Icons.email, color: Colors.blueGrey),
                       "Email", "Please enter you email", email),
                   sep(10),
@@ -83,8 +83,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                        builder: ((context) =>
-                                            const HomeScreen())));
+                                        builder: ((context) => HomeScreen())));
                               } else {}
                               setState(() {
                                 _isLoading = false;
