@@ -4,9 +4,9 @@ import 'package:flutter_chat_app/screen/welcome_screen.dart';
 import 'firebase_options.dart';
 import 'package:flutter/material.dart';
 
-Future main() async {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  Firebase.initializeApp(
+  await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
   runApp(const MyApp());

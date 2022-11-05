@@ -15,7 +15,7 @@ Future<User?> createAccount(String name, String email, String pass) async {
         .user;
 
     if (user != null) {
-      print("Accrount Creation Successful");
+      print("Account Creation Successful");
 
       user.updateDisplayName(name);
       await _firestore
@@ -43,7 +43,7 @@ Future<User?> login(String email, String password) async {
     if (user != null) {
       print("Login Successful");
     } else {
-      print("Login failes");
+      print("Login failed");
     }
     return user;
   } catch (e) {
