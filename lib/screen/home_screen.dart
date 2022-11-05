@@ -23,6 +23,23 @@ class _HomeScreenState extends State<HomeScreen> {
   Map<String, dynamic>? userMap;
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  late String uid;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    uid = _auth.currentUser!.uid;
+    setStatus("Online");
+  }
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+    setStatus("Offline");
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -79,7 +96,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: userMap != null
                       ? ListTile(
                           onTap: () {
-                            print(_auth.currentUser?.displayName);
                             String roomId = chatRoomId(
                                 (_auth.currentUser?.displayName)!,
                                 userMap!['name']);
@@ -134,6 +150,10 @@ class _HomeScreenState extends State<HomeScreen> {
     } else {
       return "$user2$user1";
     }
+  }
+
+  void setStatus(String status) async {
+    await _firestore.collection("users").doc(uid).update({"status": status});
   }
 }
 

@@ -18,10 +18,12 @@ Future<User?> createAccount(String name, String email, String pass) async {
       print("Account Creation Successful");
 
       user.updateDisplayName(name);
-      await _firestore
-          .collection('users')
-          .doc(_auth.currentUser!.uid)
-          .set({"name": name, "email": email, "status": "Unavailable"});
+      await _firestore.collection('users').doc(_auth.currentUser!.uid).set({
+        "name": name,
+        "email": email,
+        "status": "Online",
+        "uid": _auth.currentUser!.uid
+      });
     } else {
       print("Account creation failed");
     }
@@ -56,7 +58,7 @@ Future logout(BuildContext context) async {
   FirebaseAuth _auth = FirebaseAuth.instance;
 
   try {
-    await _auth.signOut().then((value) => Navigator.push(context,
+    await _auth.signOut().then((value) => Navigator.pushReplacement(context,
         MaterialPageRoute(builder: ((context) => const WelcomeScreen()))));
   } catch (e) {
     print(e);

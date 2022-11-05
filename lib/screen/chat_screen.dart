@@ -17,7 +17,25 @@ class ChatScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(title: Text(userMap['name'])),
+        appBar: AppBar(
+            title: StreamBuilder<DocumentSnapshot>(
+          stream:
+              _firestore.collection("users").doc(userMap["uid"]).snapshots(),
+          builder: (context, snapshot) {
+            if (snapshot.data != null) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Text(userMap["name"], style: const TextStyle(fontSize: 18)),
+                  Text(snapshot.data!["status"],
+                      style: const TextStyle(fontSize: 12))
+                ],
+              );
+            } else {
+              return Container();
+            }
+          },
+        )),
         body: Column(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.stretch,

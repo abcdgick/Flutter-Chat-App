@@ -90,7 +90,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           createAccount(name.text, email.text, password.text)
                               .then((value) {
                             if (value != null) {
-                              Navigator.push(
+                              Navigator.pushReplacement(
                                   context,
                                   MaterialPageRoute(
                                       builder: ((context) => HomeScreen())));
@@ -110,8 +110,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   ),
                   sep(10),
                   GestureDetector(
-                    onTap: () => Navigator.of(context).push(MaterialPageRoute(
-                        builder: (context) => const LoginScreen())),
+                    onTap: () => Navigator.of(context).pushReplacement(
+                        MaterialPageRoute(
+                            builder: (context) => const LoginScreen())),
                     child: const Text('or login instead',
                         style: TextStyle(
                             color: Colors.blueGrey,
