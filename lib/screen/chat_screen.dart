@@ -11,6 +11,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:image_picker_web/image_picker_web.dart';
 import 'package:uuid/uuid.dart';
 
+var tag;
+
 class ChatScreen extends StatelessWidget {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -140,6 +142,7 @@ class ChatScreen extends StatelessWidget {
 
   Widget messages(Map<String, dynamic> map, BuildContext context) {
     bool user = (map['sendby'] == _auth.currentUser!.displayName);
+    map["type"] == "img" ? tag = map['message'] : null;
     print(user);
     return Padding(
         padding: const EdgeInsets.all(12),
@@ -170,12 +173,11 @@ class ChatScreen extends StatelessWidget {
                           map['message'],
                           style: TextStyle(
                             color: user ? Colors.white : Colors.blue,
-                            fontFamily: 'Poppins',
                             fontSize: 15,
                           ),
                         )
                       : SizedBox(
-                          height: 300,
+                          height: 280,
                           width: 150,
                           child: InkWell(
                             onTap: () => Navigator.of(context).push(
@@ -187,7 +189,7 @@ class ChatScreen extends StatelessWidget {
                             ),
                             child: map['message'] != ""
                                 ? Hero(
-                                    tag: map['message'],
+                                    tag: tag,
                                     child: Image.network(
                                       map['message'],
                                       fit: BoxFit.scaleDown,
@@ -266,11 +268,14 @@ class ShowImage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(),
-      body: Container(
-        height: size.height,
-        width: size.width,
-        color: Colors.black,
-        child: Image.network(imageUrl),
+      body: Hero(
+        tag: tag,
+        child: Container(
+          height: size.height,
+          width: size.width,
+          color: Colors.black,
+          child: Image.network(imageUrl),
+        ),
       ),
     );
   }
