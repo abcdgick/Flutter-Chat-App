@@ -6,8 +6,6 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/container.dart';
 import 'package:flutter/src/widgets/framework.dart';
-import 'package:fluttertoast/fluttertoast_web.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:image_picker_web/image_picker_web.dart';
 import 'package:uuid/uuid.dart';
 
@@ -28,101 +26,59 @@ class ChatScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-            title: StreamBuilder<DocumentSnapshot>(
-          stream:
-              _firestore.collection("users").doc(userMap["uid"]).snapshots(),
-          builder: (context, snapshot) {
-            if (snapshot.data != null) {
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Text(userMap["name"], style: const TextStyle(fontSize: 18)),
-                  Text(snapshot.data!["status"],
-                      style: const TextStyle(fontSize: 12))
-                ],
-              );
-            } else {
-              return Container();
-            }
-          },
-        )),
-        body: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: <Widget>[
-            StreamBuilder<QuerySnapshot>(
-              stream: _firestore
-                  .collection('chatroom')
-                  .doc(chatRoomId)
-                  .collection("chats")
-                  .orderBy("time", descending: false)
-                  .snapshots(),
-              builder: (BuildContext context,
-                  AsyncSnapshot<QuerySnapshot> snapshot) {
-                if (snapshot.data != null) {
-                  return Expanded(
-                    child: ListView.builder(
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 15, horizontal: 10),
-                      itemCount: snapshot.data?.docs.length,
-                      itemBuilder: (context, index) {
-                        Map<String, dynamic> map = snapshot.data!.docs[index]
-                            .data() as Map<String, dynamic>;
-                        return messages(map, context);
-                      },
-                    ),
-                  );
-                } else {
-                  return Container();
-                }
-              },
-            ),
-            Container(
-              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: <Widget>[
-                  Expanded(
-                      child: Material(
-                    borderRadius: BorderRadius.circular(50),
-                    color: Colors.white,
-                    elevation: 5,
-                    child: Padding(
-                        padding:
-                            const EdgeInsets.only(left: 8.0, top: 2, bottom: 2),
-                        child: TextField(
-                          controller: msg,
-                          decoration: InputDecoration(
-                            suffixIcon: IconButton(
-                                onPressed: () => getImage(),
-                                icon: const Icon(Icons.photo_library)),
-                            contentPadding: const EdgeInsets.symmetric(
-                                vertical: 10.0, horizontal: 20.0),
-                            hintText: 'Type your message here...',
-                            hintStyle: const TextStyle(fontSize: 14),
-                            border: InputBorder.none,
-                          ),
-                        )),
-                  )),
-                  MaterialButton(
-                    shape: const CircleBorder(),
-                    color: Colors.blue,
-                    onPressed: () {
-                      if (msg.text.isNotEmpty) {
-                        send();
-                        msg.clear();
-                      }
+      appBar: AppBar(
+          title: StreamBuilder<DocumentSnapshot>(
+        stream: _firestore.collection("users").doc(userMap["uid"]).snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.data != null) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Text(userMap["name"], style: const TextStyle(fontSize: 18)),
+                Text(snapshot.data!["status"],
+                    style: const TextStyle(fontSize: 12))
+              ],
+            );
+          } else {
+            return Container();
+          }
+        },
+      )),
+      body: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: <Widget>[
+          StreamBuilder<QuerySnapshot>(
+            stream: _firestore
+                .collection('chatroom')
+                .doc(chatRoomId)
+                .collection("chats")
+                .orderBy("time", descending: false)
+                .snapshots(),
+            builder:
+                (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+              if (snapshot.data != null) {
+                return Expanded(
+                  child: ListView.builder(
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 15, horizontal: 10),
+                    itemCount: snapshot.data?.docs.length,
+                    itemBuilder: (context, index) {
+                      Map<String, dynamic> map = snapshot.data!.docs[index]
+                          .data() as Map<String, dynamic>;
+                      return messages(map, context);
                     },
-                    child: const Padding(
-                        padding: EdgeInsets.all(10.0),
-                        child: Icon(Icons.send, color: Colors.white)),
-                  )
-                ],
-              ),
-            )
-          ],
-        ));
+                  ),
+                );
+              } else {
+                return Container();
+              }
+            },
+          ),
+          typeMessage(),
+        ],
+      ),
+    );
   }
 
   void send() async {
@@ -150,10 +106,6 @@ class ChatScreen extends StatelessWidget {
           crossAxisAlignment:
               user ? CrossAxisAlignment.end : CrossAxisAlignment.start,
           children: <Widget>[
-            Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10),
-                child: Text(map['sendby'],
-                    style: const TextStyle(color: Colors.black87))),
             Material(
               borderRadius: BorderRadius.only(
                 bottomLeft: const Radius.circular(50),
@@ -195,12 +147,59 @@ class ChatScreen extends StatelessWidget {
                                       fit: BoxFit.scaleDown,
                                     ),
                                   )
-                                : const CircularProgressIndicator(),
+                                : const CircularProgressIndicator(
+                                    color: Colors.white,
+                                  ),
                           ),
                         )),
             )
           ],
         ));
+  }
+
+  Widget typeMessage() {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: <Widget>[
+          Expanded(
+              child: Material(
+            borderRadius: BorderRadius.circular(50),
+            color: Colors.white,
+            elevation: 5,
+            child: Padding(
+                padding: const EdgeInsets.only(left: 8.0, top: 2, bottom: 2),
+                child: TextField(
+                  controller: msg,
+                  decoration: InputDecoration(
+                    suffixIcon: IconButton(
+                        onPressed: () => getImage(),
+                        icon: const Icon(Icons.photo_library)),
+                    contentPadding: const EdgeInsets.symmetric(
+                        vertical: 10.0, horizontal: 20.0),
+                    hintText: 'Type your message here...',
+                    hintStyle: const TextStyle(fontSize: 14),
+                    border: InputBorder.none,
+                  ),
+                )),
+          )),
+          MaterialButton(
+            shape: const CircleBorder(),
+            color: Colors.blue,
+            onPressed: () {
+              if (msg.text.isNotEmpty) {
+                send();
+                msg.clear();
+              }
+            },
+            child: const Padding(
+                padding: EdgeInsets.all(10.0),
+                child: Icon(Icons.send, color: Colors.white)),
+          )
+        ],
+      ),
+    );
   }
 
   Future getImage() async {
