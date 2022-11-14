@@ -40,8 +40,8 @@ class _LoginScreenState extends State<LoginScreen> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
-                  Image.asset(
-                    'image/Messages.png',
+                  Image.network(
+                    'https://firebasestorage.googleapis.com/v0/b/flutter-chat-app-jokris.appspot.com/o/Messages.png?alt=media&token=b086e62d-f6f8-4ccc-9874-327254147cdaimage/Messages.png',
                     height: 180,
                     width: 180,
                   ),

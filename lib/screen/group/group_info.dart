@@ -3,22 +3,23 @@ import 'package:flutter/src/widgets/container.dart';
 import 'package:flutter/src/widgets/framework.dart';
 
 class GroupInfo extends StatelessWidget {
-  const GroupInfo({super.key});
+  final String groupName;
+  const GroupInfo({required this.groupName, super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: CustomScrollView(
         slivers: <Widget>[
-          const SliverAppBar(
+          SliverAppBar(
             pinned: true,
             snap: false,
             floating: false,
             expandedHeight: 160,
             flexibleSpace: FlexibleSpaceBar(
-              title: Text("Group Name"),
+              title: Text(groupName),
               centerTitle: true,
-              background: FlutterLogo(),
+              background: const FlutterLogo(),
             ),
           ),
           const SliverToBoxAdapter(

@@ -99,7 +99,6 @@ class ChatScreen extends StatelessWidget {
   Widget messages(Map<String, dynamic> map, BuildContext context) {
     bool user = (map['sendby'] == _auth.currentUser!.displayName);
     map["type"] == "img" ? tag = map['message'] : null;
-    print(user);
     return Padding(
         padding: const EdgeInsets.all(12),
         child: Column(

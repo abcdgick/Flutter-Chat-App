@@ -1,32 +1,37 @@
+import 'dart:typed_data';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/container.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter_chat_app/screen/chat_screen.dart';
 import 'package:flutter_chat_app/screen/group/group_info.dart';
+import 'package:image_picker_web/image_picker_web.dart';
+import 'package:uuid/uuid.dart';
+
+var tag;
 
 class GroupChatScreen extends StatelessWidget {
-  GroupChatScreen({super.key});
+  final String groupId, groupName;
+  GroupChatScreen({required this.groupId, required this.groupName, super.key});
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final TextEditingController msg = TextEditingController();
 
-  List<Map<String, dynamic>> dummy = [
-    {"message": 'Dis Nut created group "Group Name"', "type": "notif"},
-    {"message": "Text 1", "sendby": "one", "type": "text"},
-    {"message": "Text 2", "sendby": "two", "type": "text"},
-    {"message": "Text 3", "sendby": "a", "type": "text"},
-    {"message": "Text 4", "sendby": "four", "type": "text"},
-  ];
+  Uint8List? imageFile;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(title: const Text("Group Name"), actions: [
+        appBar: AppBar(title: Text(groupName), actions: [
           IconButton(
               onPressed: () => Navigator.of(context).push(MaterialPageRoute(
-                    builder: (context) => GroupInfo(),
+                    builder: (context) => GroupInfo(
+                      groupName: groupName,
+                    ),
                   )),
               icon: const Icon(Icons.more_vert))
         ]),
@@ -35,16 +40,24 @@ class GroupChatScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               StreamBuilder<QuerySnapshot>(
+                stream: _firestore
+                    .collection("groups")
+                    .doc(groupId)
+                    .collection("chats")
+                    .orderBy("time")
+                    .snapshots(),
                 builder: (BuildContext context,
                     AsyncSnapshot<QuerySnapshot> snapshot) {
-                  if (true) {
+                  if (snapshot.hasData) {
                     return Expanded(
                       child: ListView.builder(
                         padding: const EdgeInsets.symmetric(
                             vertical: 15, horizontal: 10),
-                        itemCount: dummy.length,
+                        itemCount: snapshot.data?.docs.length,
                         itemBuilder: (context, index) {
-                          return messages(dummy[index], context);
+                          Map<String, dynamic> map = snapshot.data!.docs[index]
+                              .data() as Map<String, dynamic>;
+                          return messages(map, context);
                         },
                       ),
                     );
@@ -57,20 +70,20 @@ class GroupChatScreen extends StatelessWidget {
             ]));
   }
 
-  // void send() async {
-  //   Map<String, dynamic> messages = {
-  //     "sendby": _auth.currentUser!.displayName,
-  //     "message": msg.text,
-  //     "type": "text",
-  //     "time": FieldValue.serverTimestamp()
-  //   };
+  void send() async {
+    Map<String, dynamic> messages = {
+      "sendby": _auth.currentUser!.displayName,
+      "message": msg.text,
+      "type": "text",
+      "time": FieldValue.serverTimestamp()
+    };
 
-  //   await _firestore
-  //       .collection('chatroom')
-  //       .doc(chatRoomId)
-  //       .collection("chats")
-  //       .add(messages);
-  // }
+    await _firestore
+        .collection('groups')
+        .doc(groupId)
+        .collection("chats")
+        .add(messages);
+  }
 
   Widget typeMessage() {
     return Container(
@@ -89,7 +102,7 @@ class GroupChatScreen extends StatelessWidget {
                   controller: msg,
                   decoration: InputDecoration(
                     suffixIcon: IconButton(
-                        onPressed: () => null,
+                        onPressed: () => getImage(),
                         icon: const Icon(Icons.photo_library)),
                     contentPadding: const EdgeInsets.symmetric(
                         vertical: 10.0, horizontal: 20.0),
@@ -104,7 +117,7 @@ class GroupChatScreen extends StatelessWidget {
             color: Colors.blue,
             onPressed: () {
               if (msg.text.isNotEmpty) {
-                //send();
+                send();
                 msg.clear();
               }
             },
@@ -118,7 +131,6 @@ class GroupChatScreen extends StatelessWidget {
   }
 
   Widget messages(Map<String, dynamic> map, BuildContext context) {
-    //map["type"] == "img" ? tag = map['message'] : null;
     return Padding(
         padding: const EdgeInsets.all(12),
         child: map['type'] == "notif"
@@ -128,6 +140,7 @@ class GroupChatScreen extends StatelessWidget {
 
   Widget chatBubble(Map<String, dynamic> map, BuildContext context) {
     bool user = (map['sendby'] == _auth.currentUser!.displayName);
+    map["type"] == "img" ? tag = map['message'] : null;
     return Column(
       crossAxisAlignment:
           user ? CrossAxisAlignment.end : CrossAxisAlignment.start,
@@ -206,5 +219,56 @@ class GroupChatScreen extends StatelessWidget {
         height: 10,
       )
     ]);
+  }
+
+  Future getImage() async {
+    imageFile = await ImagePickerWeb.getImageAsBytes();
+    if (imageFile != null) uploadImage();
+  }
+
+  Future uploadImage() async {
+    String fileName = const Uuid().v1();
+    int status = 1;
+
+    await _firestore
+        .collection('groups')
+        .doc(groupId)
+        .collection('chats')
+        .doc(fileName)
+        .set({
+      "sendby": _auth.currentUser!.displayName,
+      "message": "",
+      "type": "img",
+      "time": FieldValue.serverTimestamp(),
+    });
+
+    var ref =
+        FirebaseStorage.instance.ref().child('images').child("$fileName.jpg");
+
+    UploadTask uploadTask =
+        ref.putData(imageFile!, SettableMetadata(contentType: 'image/jpg'));
+    TaskSnapshot taskSnapshot = await uploadTask
+        .whenComplete(() => print('Done'))
+        .catchError((error) async {
+      await _firestore
+          .collection('groups')
+          .doc(groupId)
+          .collection('chats')
+          .doc(fileName)
+          .delete();
+
+      status = 0;
+    });
+
+    if (status == 1) {
+      String imageUrl = await taskSnapshot.ref.getDownloadURL();
+
+      await _firestore
+          .collection('groups')
+          .doc(groupId)
+          .collection('chats')
+          .doc(fileName)
+          .update({"message": imageUrl});
+    }
   }
 }

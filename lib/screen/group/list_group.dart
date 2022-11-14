@@ -38,7 +38,10 @@ class _GroupListState extends State<GroupList> {
               itemBuilder: (context, index) {
                 return ListTile(
                     onTap: () => Navigator.of(context).push(MaterialPageRoute(
-                        builder: (context) => GroupChatScreen())),
+                        builder: (context) => GroupChatScreen(
+                              groupName: groupList[index]["name"],
+                              groupId: groupList[index]["id"],
+                            ))),
                     leading: const Icon(Icons.group),
                     title: Text(groupList[index]["name"]));
               },

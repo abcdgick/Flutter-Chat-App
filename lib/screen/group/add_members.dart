@@ -223,6 +223,7 @@ class _AddMembersState extends State<AddMembers> {
       "message":
           "${_auth.currentUser!.displayName} Created Group ${gname.text}",
       "type": "notif",
+      "time": FieldValue.serverTimestamp(),
     });
 
     Navigator.of(context).pushAndRemoveUntil(
