@@ -44,13 +44,14 @@ class GroupChatScreen extends StatelessWidget {
                     .collection("groups")
                     .doc(groupId)
                     .collection("chats")
-                    .orderBy("time")
+                    .orderBy("time", descending: true)
                     .snapshots(),
                 builder: (BuildContext context,
                     AsyncSnapshot<QuerySnapshot> snapshot) {
                   if (snapshot.hasData) {
                     return Expanded(
                       child: ListView.builder(
+                        reverse: true,
                         padding: const EdgeInsets.symmetric(
                             vertical: 15, horizontal: 10),
                         itemCount: snapshot.data?.docs.length,
