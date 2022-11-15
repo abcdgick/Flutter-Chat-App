@@ -30,6 +30,7 @@ class GroupChatScreen extends StatelessWidget {
           IconButton(
               onPressed: () => Navigator.of(context).push(MaterialPageRoute(
                     builder: (context) => GroupInfo(
+                      groupId: groupId,
                       groupName: groupName,
                     ),
                   )),

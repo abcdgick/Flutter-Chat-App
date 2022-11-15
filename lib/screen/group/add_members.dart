@@ -20,7 +20,7 @@ class _AddMembersState extends State<AddMembers> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   Icon customIcon = const Icon(Icons.search);
-  Widget customSearchBar = const Text('Flutter Chat App');
+  Widget customSearchBar = const Text('Create Group');
   bool _isLoading = false;
   Map<String, dynamic>? userMap;
 
@@ -74,7 +74,7 @@ class _AddMembersState extends State<AddMembers> {
                     );
                   } else {
                     customIcon = const Icon(Icons.search);
-                    customSearchBar = const Text('Flutter Chat App');
+                    customSearchBar = const Text('Create Group');
                     search.clear();
                   }
                 });
@@ -101,7 +101,7 @@ class _AddMembersState extends State<AddMembers> {
             ),
       floatingActionButton: memberList.length >= 2
           ? FloatingActionButton(
-              child: Icon(Icons.forward),
+              child: const Icon(Icons.forward),
               onPressed: () {
                 showDialog(
                   context: context,

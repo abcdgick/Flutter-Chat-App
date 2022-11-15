@@ -1,10 +1,32 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/container.dart';
 import 'package:flutter/src/widgets/framework.dart';
+import 'package:flutter_chat_app/screen/group/add_member_late.dart';
+import 'package:flutter_chat_app/screen/home_screen.dart';
 
-class GroupInfo extends StatelessWidget {
-  final String groupName;
-  const GroupInfo({required this.groupName, super.key});
+class GroupInfo extends StatefulWidget {
+  final String groupId, groupName;
+  const GroupInfo({required this.groupId, required this.groupName, super.key});
+
+  @override
+  State<GroupInfo> createState() => _GroupInfoState();
+}
+
+class _GroupInfoState extends State<GroupInfo> {
+  FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  FirebaseAuth _auth = FirebaseAuth.instance;
+
+  List memberList = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    getDetails();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -17,44 +39,203 @@ class GroupInfo extends StatelessWidget {
             floating: false,
             expandedHeight: 160,
             flexibleSpace: FlexibleSpaceBar(
-              title: Text(groupName),
+              title: Text(widget.groupName),
               centerTitle: true,
               background: const FlutterLogo(),
             ),
           ),
-          const SliverToBoxAdapter(
+          SliverToBoxAdapter(
               child: SizedBox(
             height: 30,
             child: Center(
-              child: Text(
-                "30 member",
-                style: TextStyle(fontSize: 16),
-              ),
+              child: _isLoading
+                  ? const CircularProgressIndicator()
+                  : Text(
+                      "${memberList.length} members",
+                      style: const TextStyle(fontSize: 16),
+                    ),
             ),
           )),
           SliverList(
               delegate: SliverChildBuilderDelegate(
             (context, index) {
               return ListTile(
-                  leading: const Icon(Icons.account_circle),
-                  title: Text("User $index"));
+                leading: const Icon(Icons.account_circle),
+                title: Text(memberList[index]["name"]),
+                subtitle: Text(memberList[index]["email"]),
+                trailing: memberList[index]["isAdmin"]
+                    ? const Text(
+                        "Admin",
+                        style: TextStyle(color: Colors.blueGrey, fontSize: 12),
+                      )
+                    : checkAdmin()
+                        ? IconButton(
+                            onPressed: () => removeMember(index),
+                            icon: const Icon(
+                              Icons.remove_circle_outline,
+                              color: Colors.red,
+                            ))
+                        : const SizedBox(),
+              );
             },
-            childCount: 30,
+            childCount: memberList.length,
           ))
         ],
       ),
-      bottomNavigationBar: const BottomAppBar(
+      floatingActionButton: checkAdmin()
+          ? FloatingActionButton(
+              child: const Icon(Icons.add),
+              onPressed: () {
+                Navigator.of(context)
+                    .push(MaterialPageRoute(
+                        builder: (context) => AddMemberLate(
+                              groupId: widget.groupId,
+                              groupName: widget.groupName,
+                              memberList: memberList,
+                            )))
+                    .then((value) => getDetails());
+              })
+          : const SizedBox(),
+      bottomNavigationBar: BottomAppBar(
           child: Padding(
-        padding: EdgeInsets.all(8),
+        padding: const EdgeInsets.all(8),
         child: ListTile(
-          leading: Icon(Icons.logout, color: Colors.red),
-          title: Text(
+          leading: const Icon(Icons.logout, color: Colors.red),
+          title: const Text(
             "Leave Group",
             style: TextStyle(color: Colors.red, fontSize: 16),
           ),
-          onTap: null,
+          onTap: () => makeSure(),
         ),
       )),
     );
+  }
+
+  Future getDetails() async {
+    await _firestore
+        .collection("groups")
+        .doc(widget.groupId)
+        .get()
+        .then(((value) {
+      memberList = value["members"];
+      _isLoading = false;
+      setState(() {});
+    }));
+  }
+
+  bool checkAdmin() {
+    bool isAdmin = false;
+    for (var element in memberList) {
+      if (element["uid"] == _auth.currentUser!.uid) {
+        isAdmin = element["isAdmin"];
+      }
+    }
+    return isAdmin;
+  }
+
+  void removeMember(int index) {
+    if (checkAdmin()) {
+      if (_auth.currentUser!.uid != memberList[index]["uid"]) {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text("Are You Sure?"),
+            content: Text("Remove ${memberList[index]['name']}?"),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: const Text("NO"),
+              ),
+              TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    removeMember2(index);
+                  },
+                  child: const Text("YES"))
+            ],
+          ),
+        );
+      }
+    }
+  }
+
+  Future removeMember2(int index) async {
+    String uid = memberList[index]["uid"];
+
+    setState(() {
+      _isLoading = true;
+      memberList.removeAt(index);
+    });
+
+    await _firestore.collection("groups").doc(widget.groupId).update({
+      "members": memberList,
+    }).then((value) async {
+      await _firestore
+          .collection("users")
+          .doc(uid)
+          .collection("groups")
+          .doc(widget.groupId)
+          .delete();
+
+      setState(() {
+        _isLoading = false;
+      });
+    });
+  }
+
+  void makeSure() {
+    if (!checkAdmin()) {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text("Are You Sure?"),
+          content: const Text("Leave Group?"),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text("CANCEL"),
+            ),
+            TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  leave();
+                },
+                child: const Text("LEAVE"))
+          ],
+        ),
+      );
+    }
+  }
+
+  Future leave() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    for (int i = 0; i < memberList.length; i++) {
+      if (memberList[i]["uid"] == _auth.currentUser!.uid) {
+        memberList.removeAt(i);
+        break;
+      }
+    }
+
+    await _firestore.collection("groups").doc(widget.groupId).update({
+      "members": memberList,
+    });
+
+    await _firestore
+        .collection("users")
+        .doc(_auth.currentUser!.uid)
+        .collection("groups")
+        .doc(widget.groupId)
+        .delete();
+
+    Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (context) => HomeScreen()),
+        (route) => false);
   }
 }
