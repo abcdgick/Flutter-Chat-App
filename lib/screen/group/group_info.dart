@@ -93,6 +93,11 @@ class _GroupInfoState extends State<GroupInfo> {
                               groupName: widget.groupName,
                               memberList: memberList,
                             )))
+                    .then((value) => ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Users Successfully Added'),
+                          ),
+                        ))
                     .then((value) => getDetails());
               })
           : const SizedBox(),
@@ -208,6 +213,34 @@ class _GroupInfoState extends State<GroupInfo> {
           ],
         ),
       );
+    } else if (memberList.length == 1) {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text("Are You Sure?"),
+          content: const Text("Delete Group?"),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text("CANCEL"),
+            ),
+            TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  delete();
+                },
+                child: const Text("LEAVE"))
+          ],
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('A captain cannot just abandoned ship'),
+        ),
+      );
     }
   }
 
@@ -233,7 +266,36 @@ class _GroupInfoState extends State<GroupInfo> {
         .collection("groups")
         .doc(widget.groupId)
         .delete();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Left ${widget.groupName}'),
+      ),
+    );
+    Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (context) => HomeScreen()),
+        (route) => false);
+  }
 
+  Future delete() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    memberList.clear();
+
+    await _firestore.collection("groups").doc(widget.groupId).delete();
+
+    await _firestore
+        .collection("users")
+        .doc(_auth.currentUser!.uid)
+        .collection("groups")
+        .doc(widget.groupId)
+        .delete();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Deleted ${widget.groupName}'),
+      ),
+    );
     Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(builder: (context) => HomeScreen()),
         (route) => false);

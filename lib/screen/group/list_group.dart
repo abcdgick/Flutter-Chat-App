@@ -48,8 +48,8 @@ class _GroupListState extends State<GroupList> {
             ),
       floatingActionButton: FloatingActionButton(
           tooltip: "Create Group",
-          onPressed: () => Navigator.of(context)
-              .push(MaterialPageRoute(builder: (context) => AddMembers())),
+          onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (context) => const AddMembers())),
           child: const Icon(Icons.add)),
     );
   }

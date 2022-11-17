@@ -5,7 +5,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_chat_app/screen/welcome_screen.dart';
 
-Future<User?> createAccount(String name, String email, String pass) async {
+Future<User?> createAccount(
+    String name, String email, String pass, BuildContext context) async {
   FirebaseAuth _auth = FirebaseAuth.instance;
   FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
@@ -15,8 +16,6 @@ Future<User?> createAccount(String name, String email, String pass) async {
         .user;
 
     if (user != null) {
-      print("Account Creation Successful");
-
       user.updateDisplayName(name);
       await _firestore.collection('users').doc(_auth.currentUser!.uid).set({
         "name": name,
@@ -24,17 +23,30 @@ Future<User?> createAccount(String name, String email, String pass) async {
         "status": "Online",
         "uid": _auth.currentUser!.uid
       });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Welcome ${user.displayName}!"),
+        ),
+      );
     } else {
-      print("Account creation failed");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Account Creation Failed"),
+        ),
+      );
     }
     return user;
-  } catch (e) {
-    print(e);
+  } on FirebaseAuthException catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(e.message!),
+      ),
+    );
     return null;
   }
 }
 
-Future<User?> login(String email, String password) async {
+Future<User?> login(String email, String password, BuildContext context) async {
   FirebaseAuth _auth = FirebaseAuth.instance;
 
   try {
@@ -43,13 +55,25 @@ Future<User?> login(String email, String password) async {
         .user;
 
     if (user != null) {
-      print("Login Successful");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Welcome Back ${user.displayName}!'),
+        ),
+      );
     } else {
-      print("Login failed");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Login Failed'),
+        ),
+      );
     }
     return user;
-  } catch (e) {
-    print(e);
+  } on FirebaseAuthException catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(e.message!),
+      ),
+    );
     return null;
   }
 }
@@ -58,9 +82,18 @@ Future logout(BuildContext context) async {
   FirebaseAuth _auth = FirebaseAuth.instance;
 
   try {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Come Again!'),
+      ),
+    );
     await _auth.signOut().then((value) => Navigator.pushReplacement(context,
         MaterialPageRoute(builder: ((context) => const WelcomeScreen()))));
-  } catch (e) {
-    print(e);
+  } on FirebaseAuthException catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(e.message!),
+      ),
+    );
   }
 }

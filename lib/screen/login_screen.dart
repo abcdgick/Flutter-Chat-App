@@ -77,7 +77,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             _isLoading = true;
                           });
 
-                          login(email.text, password.text).then(
+                          login(email.text, password.text, context).then(
                             (value) {
                               if (value != null) {
                                 Navigator.pushReplacement(
@@ -90,11 +90,6 @@ class _LoginScreenState extends State<LoginScreen> {
                               });
                             },
                           );
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                  content: Text(
-                                      'Please fill all the field correctly')));
                         }
                       },
                     ),

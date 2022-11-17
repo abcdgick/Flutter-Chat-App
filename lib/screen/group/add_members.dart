@@ -159,8 +159,20 @@ class _AddMembersState extends State<AddMembers> {
                 "uid": userMap!["uid"],
                 "isAdmin": false
               });
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('User already in group'),
+                ),
+              );
             }
             userMap = null;
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('User does not exists'),
+              ),
+            );
           }
           _isLoading = false;
         });
@@ -225,6 +237,12 @@ class _AddMembersState extends State<AddMembers> {
       "type": "notif",
       "time": FieldValue.serverTimestamp(),
     });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text("Group ${gname.text} successfully created"),
+      ),
+    );
 
     Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(builder: (_) => GroupList()), (route) => false);

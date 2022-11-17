@@ -87,7 +87,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             _isLoading = true;
                           });
 
-                          createAccount(name.text, email.text, password.text)
+                          createAccount(
+                                  name.text, email.text, password.text, context)
                               .then((value) {
                             if (value != null) {
                               Navigator.pushReplacement(
@@ -99,11 +100,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
                               _isLoading = false;
                             });
                           });
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                  content: Text(
-                                      'Please fill all the field correctly')));
                         }
                       },
                     ),

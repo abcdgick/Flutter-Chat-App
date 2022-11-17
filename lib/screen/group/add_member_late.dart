@@ -103,6 +103,11 @@ class _AddMemberLateState extends State<AddMemberLate> {
                 child: const Icon(Icons.forward),
                 onPressed: () {
                   addMember();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Members Successfully Added'),
+                    ),
+                  );
                   Navigator.of(context).pop();
                 },
               )
@@ -142,8 +147,20 @@ class _AddMemberLateState extends State<AddMemberLate> {
                 "uid": userMap!["uid"],
                 "isAdmin": false
               });
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('User already in group'),
+                ),
+              );
             }
             userMap = null;
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('User does not exist'),
+              ),
+            );
           }
           _isLoading = false;
         });

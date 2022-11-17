@@ -60,7 +60,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         icon: const Icon(Icons.search),
                         color: Colors.white,
                         onPressed: () {
-                          onSearch(search.text);
+                          onSearch(search.text, context);
                         },
                       ),
                       title: TextField(
@@ -82,6 +82,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   } else {
                     customIcon = const Icon(Icons.search);
                     customSearchBar = const Text('Flutter Chat App');
+                    userMap = null;
                     search.clear();
                   }
                 });
@@ -94,6 +95,9 @@ class _HomeScreenState extends State<HomeScreen> {
           : SingleChildScrollView(
               child: Container(
                 padding: const EdgeInsets.all(10),
+                height: MediaQuery.of(context).size.height - kToolbarHeight,
+                alignment:
+                    userMap != null ? Alignment.topLeft : Alignment.center,
                 child: userMap != null
                     ? ListTile(
                         onTap: () {
@@ -117,7 +121,22 @@ class _HomeScreenState extends State<HomeScreen> {
                         subtitle: Text(userMap!['email']),
                         trailing: const Icon(Icons.chat, color: Colors.black),
                       )
-                    : null,
+                    : Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: const <Widget>[
+                          Image(
+                              image: NetworkImage(
+                                  "https://media.tenor.com/hFF7PF8xvN4AAAAi/neco-arc-taunt.gif"),
+                              width: 250,
+                              height: 180),
+                          SizedBox(height: 40),
+                          Text(
+                            "Created by Jonathan Krisna - 2020130017",
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 18),
+                          )
+                        ],
+                      ),
               ),
             ),
       floatingActionButton: FloatingActionButton(
@@ -129,10 +148,9 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  void onSearch(String text) async {
+  void onSearch(String text, BuildContext context) async {
     FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-    print(text);
     setState(() {
       _isLoading = true;
     });
@@ -143,9 +161,24 @@ class _HomeScreenState extends State<HomeScreen> {
         .then(
       (value) {
         setState(() {
-          if (value.size != 0) userMap = value.docs[0].data();
+          if (value.size != 0) {
+            userMap = value.docs[0].data();
+            if (userMap!["name"] == _auth.currentUser!.displayName) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text("You can't chat with yourself!"),
+                ),
+              );
+              userMap = null;
+            }
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('User does not exist'),
+              ),
+            );
+          }
           _isLoading = false;
-          print(userMap);
         });
       },
     );
