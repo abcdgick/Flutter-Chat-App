@@ -128,7 +128,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
       cursorColor: Colors.blue,
       onChanged: (value) => setState(() {}),
       style: const TextStyle(color: Colors.black),
-      keyboardType: TextInputType.number,
+      keyboardType: TextInputType.name,
       inputFormatters: [
         FilteringTextInputFormatter.allow(RegExp("[a-zA-Z ]+"))
       ],
@@ -173,6 +173,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     return TextFormField(
       cursorColor: Colors.blue,
       style: const TextStyle(color: Colors.black),
+      keyboardType: TextInputType.emailAddress,
       //inputFormatters: [FilteringTextInputFormatter.allow(RegExp(pattern))],
       onChanged: (value) => setState(() {}),
       decoration: InputDecoration(
@@ -215,6 +216,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
       obscureText: !_passwordVisible,
       enableSuggestions: false,
       autocorrect: false,
+      keyboardType: TextInputType.visiblePassword,
       decoration: InputDecoration(
           prefixIcon: const Icon(Icons.lock, color: Colors.blueGrey),
           labelText: "Password",

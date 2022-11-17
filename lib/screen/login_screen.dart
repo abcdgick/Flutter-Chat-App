@@ -120,6 +120,7 @@ class _LoginScreenState extends State<LoginScreen> {
         r"{0,253}[a-zA-Z0-9])?)*$";
     return TextFormField(
       cursorColor: Colors.blue,
+      keyboardType: TextInputType.name,
       style: const TextStyle(color: Colors.black),
       //inputFormatters: [FilteringTextInputFormatter.allow(RegExp(pattern))],
       onChanged: (value) => setState(() {}),
@@ -163,6 +164,7 @@ class _LoginScreenState extends State<LoginScreen> {
       obscureText: !_passwordVisible,
       enableSuggestions: false,
       autocorrect: false,
+      keyboardType: TextInputType.visiblePassword,
       decoration: InputDecoration(
           prefixIcon: const Icon(Icons.lock, color: Colors.blueGrey),
           labelText: "Password",
