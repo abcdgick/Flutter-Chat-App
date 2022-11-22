@@ -26,7 +26,7 @@ class GroupChatScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(title: Text(groupName), actions: [
+        appBar: AppBar(title: Text(groupName), actions: <Widget>[
           IconButton(
               onPressed: () => Navigator.of(context).push(MaterialPageRoute(
                     builder: (context) => GroupInfo(

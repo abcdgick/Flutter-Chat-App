@@ -3,9 +3,13 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/container.dart';
 import 'package:flutter/src/widgets/framework.dart';
+import 'package:flutter_chat_app/db/account.dart';
 import 'package:flutter_chat_app/screen/group/add_members.dart';
 import 'package:flutter_chat_app/screen/group/chat_screen.dart';
 import 'package:flutter_chat_app/screen/home_screen.dart';
+import 'package:flutter_chat_app/screen/profile_screen.dart';
+
+final List<Widget> _children = [HomeScreen(), GroupList(), ProfilePage()];
 
 class GroupList extends StatefulWidget {
   const GroupList({super.key});
@@ -30,28 +34,63 @@ class _GroupListState extends State<GroupList> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Groups")),
+      appBar: AppBar(
+        title: const Text("Groups"),
+        centerTitle: true,
+      ),
       body: _isLoading
           ? const LoadingBody()
-          : ListView.builder(
-              itemCount: groupList.length,
-              itemBuilder: (context, index) {
-                return ListTile(
-                    onTap: () => Navigator.of(context).push(MaterialPageRoute(
-                        builder: (context) => GroupChatScreen(
-                              groupName: groupList[index]["name"],
-                              groupId: groupList[index]["id"],
-                            ))),
-                    leading: const Icon(Icons.group),
-                    title: Text(groupList[index]["name"]));
-              },
+          : Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: ListView.builder(
+                itemCount: groupList.length,
+                itemBuilder: (context, index) {
+                  return ListTile(
+                      onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                          builder: (context) => GroupChatScreen(
+                                groupName: groupList[index]["name"],
+                                groupId: groupList[index]["id"],
+                              ))),
+                      leading: const Icon(Icons.group),
+                      title: Text(groupList[index]["name"]));
+                },
+              ),
             ),
       floatingActionButton: FloatingActionButton(
           tooltip: "Create Group",
           onPressed: () => Navigator.of(context).push(
               MaterialPageRoute(builder: (context) => const AddMembers())),
           child: const Icon(Icons.add)),
+      bottomNavigationBar: BottomNavigationBar(
+        backgroundColor: Colors.blueGrey,
+        selectedItemColor: Colors.white,
+        unselectedItemColor: Colors.grey.shade400,
+        selectedLabelStyle: TextStyle(fontWeight: FontWeight.w600),
+        unselectedLabelStyle: TextStyle(fontWeight: FontWeight.w600),
+        type: BottomNavigationBarType.fixed,
+        currentIndex: 1,
+        onTap: onTap,
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.message),
+            label: "Chats",
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.group),
+            label: "Groups",
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.account_box),
+            label: "Profile",
+          ),
+        ],
+      ),
     );
+  }
+
+  void onTap(int index) {
+    Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => _children[index]));
   }
 
   void getGroup() async {

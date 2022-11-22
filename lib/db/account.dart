@@ -21,7 +21,10 @@ Future<User?> createAccount(
         "name": name,
         "email": email,
         "status": "Online",
-        "uid": _auth.currentUser!.uid
+        "uid": _auth.currentUser!.uid,
+        "about": "Hi there! I am using Flutter Chat App",
+        "profile":
+            "https://firebasestorage.googleapis.com/v0/b/flutter-chat-app-jokris.appspot.com/o/profiles%2FDefault.jpg?alt=media&token=0e930bfb-4a12-4a07-9086-d8f4985773ee"
       });
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

@@ -32,6 +32,7 @@ class MyApp extends StatelessWidget {
             // is not restarted.
             primarySwatch: Colors.blueGrey,
             fontFamily: 'RobotoSlab'),
+        debugShowCheckedModeBanner: false,
         home: Redirect());
   }
 }

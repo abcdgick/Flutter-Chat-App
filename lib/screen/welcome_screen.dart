@@ -55,7 +55,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                   child: const Text('LOGIN',
                       style: TextStyle(color: Colors.white, fontSize: 20)),
                   onPressed: () {
-                    Navigator.push(
+                    Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(
                             builder: (context) => const LoginScreen()));
@@ -74,7 +74,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                       padding: const EdgeInsets.all(20)),
                   child: const Text('SIGNUP', style: TextStyle(fontSize: 20)),
                   onPressed: () {
-                    Navigator.push(
+                    Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(
                             builder: (context) => const SignUpScreen()));

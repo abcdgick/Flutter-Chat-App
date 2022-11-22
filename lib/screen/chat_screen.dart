@@ -6,6 +6,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/container.dart';
 import 'package:flutter/src/widgets/framework.dart';
+import 'package:flutter_chat_app/screen/user_screen.dart';
 import 'package:image_picker_web/image_picker_web.dart';
 import 'package:uuid/uuid.dart';
 
@@ -27,23 +28,52 @@ class ChatScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+          titleSpacing: 0,
           title: StreamBuilder<DocumentSnapshot>(
-        stream: _firestore.collection("users").doc(userMap["uid"]).snapshots(),
-        builder: (context, snapshot) {
-          if (snapshot.data != null) {
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Text(userMap["name"], style: const TextStyle(fontSize: 18)),
-                Text(snapshot.data!["status"],
-                    style: const TextStyle(fontSize: 12))
-              ],
-            );
-          } else {
-            return Container();
-          }
-        },
-      )),
+            stream:
+                _firestore.collection("users").doc(userMap["uid"]).snapshots(),
+            builder: (context, snapshot) {
+              if (snapshot.data != null) {
+                return Row(
+                  children: [
+                    ClipOval(
+                      child: SizedBox.fromSize(
+                        size: const Size.fromRadius(22),
+                        child: Image.network(
+                          userMap['profile'],
+                          fit: BoxFit.fill,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 15),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Text(userMap["name"],
+                            style: const TextStyle(fontSize: 18)),
+                        Text(snapshot.data!["status"],
+                            style: const TextStyle(fontSize: 12))
+                      ],
+                    ),
+                  ],
+                );
+              } else {
+                return Container();
+              }
+            },
+          ),
+          actions: <Widget>[
+            IconButton(
+                onPressed: () => Navigator.of(context).push(MaterialPageRoute(
+                      builder: (context) => UserProfile(
+                        profile: userMap["profile"],
+                        about: userMap["about"],
+                        name: userMap["name"],
+                        email: userMap["email"],
+                      ),
+                    )),
+                icon: const Icon(Icons.more_vert))
+          ]),
       body: Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.stretch,

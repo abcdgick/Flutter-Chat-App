@@ -6,7 +6,11 @@ import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter_chat_app/db/account.dart';
 import 'package:flutter_chat_app/screen/chat_screen.dart';
 import 'package:flutter_chat_app/screen/group/list_group.dart';
+import 'package:flutter_chat_app/screen/profile_screen.dart';
+import 'package:flutter_chat_app/screen/user_screen.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+
+final List<Widget> _children = [HomeScreen(), GroupList(), ProfilePage()];
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -17,7 +21,10 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   Icon customIcon = const Icon(Icons.search);
-  Widget customSearchBar = const Text('Flutter Chat App');
+  Widget customSearchBar = const Text(
+    'Flutter Chat App',
+    style: TextStyle(fontWeight: FontWeight.bold),
+  );
   final TextEditingController search = TextEditingController();
 
   bool _isLoading = false;
@@ -47,8 +54,6 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         title: customSearchBar,
         centerTitle: true,
-        leading: IconButton(
-            icon: const Icon(Icons.logout), onPressed: () => logout(context)),
         actions: <Widget>[
           IconButton(
               onPressed: () {
@@ -68,7 +73,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           hintText: 'type in account email...',
                           hintStyle: TextStyle(
                             color: Colors.white,
-                            fontSize: 18,
+                            fontSize: 16,
                             fontStyle: FontStyle.italic,
                           ),
                           border: InputBorder.none,
@@ -81,7 +86,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     );
                   } else {
                     customIcon = const Icon(Icons.search);
-                    customSearchBar = const Text('Flutter Chat App');
+                    customSearchBar = const Text('Flutter Chat App',
+                        style: TextStyle(fontWeight: FontWeight.bold));
                     userMap = null;
                     search.clear();
                   }
@@ -95,11 +101,15 @@ class _HomeScreenState extends State<HomeScreen> {
           : SingleChildScrollView(
               child: Container(
                 padding: const EdgeInsets.all(10),
-                height: MediaQuery.of(context).size.height - kToolbarHeight,
+                height: MediaQuery.of(context).size.height -
+                    kToolbarHeight -
+                    kBottomNavigationBarHeight,
                 alignment:
                     userMap != null ? Alignment.topLeft : Alignment.center,
                 child: userMap != null
                     ? ListTile(
+                        dense: true,
+                        visualDensity: VisualDensity(vertical: 2),
                         onTap: () {
                           String roomId = chatRoomId(
                               (_auth.currentUser?.displayName)!,
@@ -111,8 +121,25 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                           ));
                         },
-                        leading: const Icon(Icons.account_circle,
-                            color: Colors.black),
+                        leading: InkWell(
+                            onTap: () =>
+                                Navigator.of(context).push(MaterialPageRoute(
+                                  builder: (context) => UserProfile(
+                                    profile: userMap!["profile"],
+                                    about: userMap!["about"],
+                                    name: userMap!["name"],
+                                    email: userMap!["email"],
+                                  ),
+                                )),
+                            child: ClipOval(
+                              child: SizedBox.fromSize(
+                                size: const Size.fromRadius(30),
+                                child: Image.network(
+                                  userMap!['profile'],
+                                  fit: BoxFit.fill,
+                                ),
+                              ),
+                            )),
                         title: Text(userMap!['name'],
                             style: const TextStyle(
                                 color: Colors.black,
@@ -139,13 +166,36 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
               ),
             ),
-      floatingActionButton: FloatingActionButton(
-        child: const Icon(Icons.group),
-        onPressed: () => Navigator.of(context).push(MaterialPageRoute(
-          builder: (context) => const GroupList(),
-        )),
+      bottomNavigationBar: BottomNavigationBar(
+        backgroundColor: Colors.blueGrey,
+        selectedItemColor: Colors.white,
+        unselectedItemColor: Colors.grey.shade400,
+        selectedLabelStyle: TextStyle(fontWeight: FontWeight.w600),
+        unselectedLabelStyle: TextStyle(fontWeight: FontWeight.w600),
+        type: BottomNavigationBarType.fixed,
+        currentIndex: 0,
+        onTap: onTap,
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.message),
+            label: "Chats",
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.group),
+            label: "Groups",
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.account_box),
+            label: "Profile",
+          ),
+        ],
       ),
     );
+  }
+
+  void onTap(int index) {
+    Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => _children[index]));
   }
 
   void onSearch(String text, BuildContext context) async {
