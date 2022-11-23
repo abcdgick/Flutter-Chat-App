@@ -215,6 +215,8 @@ class _AddMembersState extends State<AddMembers> {
     await _firestore.collection('groups').doc(groupId).set({
       "members": memberList,
       "id": groupId,
+      "profile":
+          "https://firebasestorage.googleapis.com/v0/b/flutter-chat-app-jokris.appspot.com/o/profiles%2FGroup.jpg?alt=media&token=0903f306-9761-4bbb-9413-693c65966a5c"
     });
 
     for (int i = 0; i < memberList.length; i++) {

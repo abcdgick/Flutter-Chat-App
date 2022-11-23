@@ -6,12 +6,11 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/container.dart';
 import 'package:flutter/src/widgets/framework.dart';
-import 'package:flutter_chat_app/screen/chat_screen.dart';
+import 'package:flutter_chat_app/screen/chat_screen.dart' as cs;
 import 'package:flutter_chat_app/screen/group/group_info.dart';
+import 'package:flutter_chat_app/screen/user_screen.dart';
 import 'package:image_picker_web/image_picker_web.dart';
 import 'package:uuid/uuid.dart';
-
-var tag;
 
 class GroupChatScreen extends StatelessWidget {
   final String groupId, groupName;
@@ -22,6 +21,7 @@ class GroupChatScreen extends StatelessWidget {
   final TextEditingController msg = TextEditingController();
 
   Uint8List? imageFile;
+  var tag;
 
   @override
   Widget build(BuildContext context) {
@@ -176,13 +176,17 @@ class GroupChatScreen extends StatelessWidget {
                       height: 280,
                       width: 150,
                       child: InkWell(
-                        onTap: () => Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => ShowImage(
-                              imageUrl: map['message'],
+                        onTap: () {
+                          tag = map['message'];
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => cs.ShowImage(
+                                imageUrl: map['message'],
+                                tag: tag,
+                              ),
                             ),
-                          ),
-                        ),
+                          );
+                        },
                         child: map['message'] != ""
                             ? Hero(
                                 tag: tag,
@@ -213,9 +217,9 @@ class GroupChatScreen extends StatelessWidget {
               child: Text(
                 map['message'],
                 style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 14,
-                ),
+                    color: Colors.white,
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold),
               ))),
       const SizedBox(
         height: 10,

@@ -10,8 +10,6 @@ import 'package:flutter_chat_app/screen/user_screen.dart';
 import 'package:image_picker_web/image_picker_web.dart';
 import 'package:uuid/uuid.dart';
 
-var tag;
-
 class ChatScreen extends StatelessWidget {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -21,6 +19,7 @@ class ChatScreen extends StatelessWidget {
   final String chatRoomId;
 
   Uint8List? imageFile;
+  var tag;
 
   ChatScreen({super.key, required this.userMap, required this.chatRoomId});
 
@@ -162,13 +161,15 @@ class ChatScreen extends StatelessWidget {
                           height: 280,
                           width: 150,
                           child: InkWell(
-                            onTap: () => Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (_) => ShowImage(
-                                  imageUrl: map['message'],
+                            onTap: () {
+                              tag = map['message'];
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (_) => ShowImage(
+                                      imageUrl: map['message'], tag: tag),
                                 ),
-                              ),
-                            ),
+                              );
+                            },
                             child: map['message'] != ""
                                 ? Hero(
                                     tag: tag,
@@ -288,8 +289,10 @@ class ChatScreen extends StatelessWidget {
 
 class ShowImage extends StatelessWidget {
   final String imageUrl;
+  final tag;
 
-  const ShowImage({required this.imageUrl, Key? key}) : super(key: key);
+  const ShowImage({required this.imageUrl, required this.tag, Key? key})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {

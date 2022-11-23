@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/container.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter_chat_app/screen/group/add_member_late.dart';
+import 'package:flutter_chat_app/screen/group/profile_screen.dart';
 import 'package:flutter_chat_app/screen/home_screen.dart';
 
 class GroupInfo extends StatefulWidget {
@@ -19,6 +20,7 @@ class _GroupInfoState extends State<GroupInfo> {
   FirebaseAuth _auth = FirebaseAuth.instance;
 
   List memberList = [];
+  String profileUrl = "";
   bool _isLoading = true;
 
   @override
@@ -37,16 +39,71 @@ class _GroupInfoState extends State<GroupInfo> {
             pinned: true,
             snap: false,
             floating: false,
-            expandedHeight: 160,
+            expandedHeight: 200,
+            actions: [
+              checkAdmin()
+                  ? PopupMenuButton<String>(
+                      itemBuilder: (context) {
+                        return [
+                          PopupMenuItem(
+                            child: const Text("Edit Group Info"),
+                            onTap: () =>
+                                WidgetsBinding.instance.addPostFrameCallback(
+                              (timeStamp) => Navigator.of(context)
+                                  .push(
+                                MaterialPageRoute(
+                                    builder: (context) => GroupProfile(
+                                          isAdmin: checkAdmin(),
+                                          groupId: widget.groupId,
+                                          groupName: widget.groupName,
+                                        )),
+                              )
+                                  .then((value) {
+                                setState(() {});
+                              }),
+                            ),
+                          ),
+                          PopupMenuItem(
+                            child: const Text("Delete Group"),
+                            onTap: () =>
+                                WidgetsBinding.instance.addPostFrameCallback(
+                              (timeStamp) => delete(),
+                            ),
+                          )
+                        ];
+                      },
+                    )
+                  : IconButton(
+                      icon: Icon(Icons.more_vert),
+                      onPressed: () => Navigator.of(context).push(
+                        MaterialPageRoute(
+                            builder: (context) => GroupProfile(
+                                  isAdmin: checkAdmin(),
+                                  groupId: widget.groupId,
+                                  groupName: widget.groupName,
+                                )),
+                      ),
+                    )
+            ],
             flexibleSpace: FlexibleSpaceBar(
-              title: Text(widget.groupName),
+              title: Text(
+                widget.groupName,
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
               centerTitle: true,
-              background: const FlutterLogo(),
+              background: profileUrl == ""
+                  ? const CircularProgressIndicator(
+                      color: Colors.white,
+                    )
+                  : Image.network(
+                      profileUrl,
+                      fit: BoxFit.fitHeight,
+                    ),
             ),
           ),
           SliverToBoxAdapter(
               child: SizedBox(
-            height: 30,
+            height: 50,
             child: Center(
               child: _isLoading
                   ? const CircularProgressIndicator()
@@ -60,6 +117,7 @@ class _GroupInfoState extends State<GroupInfo> {
               delegate: SliverChildBuilderDelegate(
             (context, index) {
               return ListTile(
+                onTap: () {},
                 leading: const Icon(Icons.account_circle),
                 title: Text(memberList[index]["name"]),
                 subtitle: Text(memberList[index]["email"]),
@@ -122,6 +180,7 @@ class _GroupInfoState extends State<GroupInfo> {
         .doc(widget.groupId)
         .get()
         .then(((value) {
+      profileUrl = value["profile"];
       memberList = value["members"];
       _isLoading = false;
       setState(() {});
@@ -214,27 +273,7 @@ class _GroupInfoState extends State<GroupInfo> {
         ),
       );
     } else if (memberList.length == 1) {
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text("Are You Sure?"),
-          content: const Text("Delete Group?"),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: const Text("CANCEL"),
-            ),
-            TextButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                  delete();
-                },
-                child: const Text("LEAVE"))
-          ],
-        ),
-      );
+      delete();
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -276,21 +315,52 @@ class _GroupInfoState extends State<GroupInfo> {
         (route) => false);
   }
 
-  Future delete() async {
+  void delete() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Are You Sure?"),
+        content: const Text("Delete Group?"),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            child: const Text("CANCEL"),
+          ),
+          TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                delete2();
+              },
+              child: const Text("DELETE"))
+        ],
+      ),
+    );
+  }
+
+  Future delete2() async {
     setState(() {
       _isLoading = true;
     });
 
+    for (var member in memberList) {
+      await _firestore
+          .collection("users")
+          .doc(member["uid"])
+          .collection("groups")
+          .doc(widget.groupId)
+          .delete();
+    }
+
     memberList.clear();
 
-    await _firestore.collection("groups").doc(widget.groupId).delete();
-
     await _firestore
-        .collection("users")
-        .doc(_auth.currentUser!.uid)
         .collection("groups")
         .doc(widget.groupId)
-        .delete();
+        .delete()
+        .then((value) => _isLoading = false);
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('Deleted ${widget.groupName}'),

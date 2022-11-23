@@ -68,13 +68,20 @@ class _ProfilePageState extends State<ProfilePage> {
                       child: Column(
                         children: <Widget>[
                           InkWell(
-                              onTap: () => Navigator.of(context).push(
-                                    MaterialPageRoute(
-                                      builder: (_) => ShowImage(
-                                        imageUrl: snapshot.data!['profile'],
-                                      ),
+                              onTap: () {
+                                tag = snapshot.data!["profile"];
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (_) => SaveImage(
+                                      imageUrl: snapshot.data!['profile'],
+                                      tag: tag,
+                                      collection: "users",
+                                      doc: _auth.currentUser!.uid,
+                                      isAdmin: true,
                                     ),
                                   ),
+                                );
+                              },
                               child: Hero(
                                 tag: snapshot.data!['profile'],
                                 child: ClipOval(
@@ -212,7 +219,8 @@ class _ProfilePageState extends State<ProfilePage> {
                 TextButton(
                     onPressed: () {
                       Navigator.pop(context);
-                      if (textEditingController.text != subs) save(title);
+                      if (textEditingController.text != subs &&
+                          textEditingController.text != "") save(title);
                     },
                     child: const Text("SAVE"))
               ],
@@ -224,10 +232,19 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 }
 
-class ShowImage extends StatelessWidget {
-  final String imageUrl;
+class SaveImage extends StatelessWidget {
+  final String imageUrl, collection, doc;
+  final tag;
+  final bool isAdmin;
 
-  ShowImage({required this.imageUrl, Key? key}) : super(key: key);
+  SaveImage(
+      {required this.imageUrl,
+      required this.tag,
+      Key? key,
+      required this.collection,
+      required this.doc,
+      required this.isAdmin})
+      : super(key: key);
 
   Uint8List? imageFile;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -240,22 +257,24 @@ class ShowImage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         actions: <Widget>[
-          IconButton(
-            icon: Icon(
-              Icons.edit,
-              color: Colors.white,
-            ),
-            onPressed: () async {
-              if (await editProfile()) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text("Profile Image Successfully Updated"),
+          isAdmin
+              ? IconButton(
+                  icon: const Icon(
+                    Icons.edit,
+                    color: Colors.white,
                   ),
-                );
-                Navigator.pop(context);
-              }
-            },
-          )
+                  onPressed: () async {
+                    if (await editProfile()) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text("Profile Image Successfully Updated"),
+                        ),
+                      );
+                      Navigator.pop(context);
+                    }
+                  },
+                )
+              : const SizedBox()
         ],
       ),
       body: Hero(
@@ -290,8 +309,8 @@ class ShowImage extends StatelessWidget {
         String imageUrl = await taskSnapshot.ref.getDownloadURL();
 
         await _firestore
-            .collection("users")
-            .doc(_auth.currentUser!.uid)
+            .collection(collection)
+            .doc(doc)
             .update({"profile": imageUrl});
 
         return true;

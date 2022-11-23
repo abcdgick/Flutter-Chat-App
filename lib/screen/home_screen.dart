@@ -109,7 +109,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: userMap != null
                     ? ListTile(
                         dense: true,
-                        visualDensity: VisualDensity(vertical: 2),
+                        visualDensity: const VisualDensity(vertical: 2),
                         onTap: () {
                           String roomId = chatRoomId(
                               (_auth.currentUser?.displayName)!,

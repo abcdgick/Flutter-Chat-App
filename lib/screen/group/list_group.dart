@@ -6,6 +6,7 @@ import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter_chat_app/db/account.dart';
 import 'package:flutter_chat_app/screen/group/add_members.dart';
 import 'package:flutter_chat_app/screen/group/chat_screen.dart';
+import 'package:flutter_chat_app/screen/group/group_info.dart';
 import 'package:flutter_chat_app/screen/home_screen.dart';
 import 'package:flutter_chat_app/screen/profile_screen.dart';
 
@@ -21,6 +22,8 @@ class GroupList extends StatefulWidget {
 class _GroupListState extends State<GroupList> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
+
+  List<String> profile = [];
 
   List groupList = [];
   bool _isLoading = true;
@@ -46,13 +49,33 @@ class _GroupListState extends State<GroupList> {
                 itemCount: groupList.length,
                 itemBuilder: (context, index) {
                   return ListTile(
+                      dense: true,
+                      visualDensity: const VisualDensity(vertical: 2),
                       onTap: () => Navigator.of(context).push(MaterialPageRoute(
                           builder: (context) => GroupChatScreen(
                                 groupName: groupList[index]["name"],
                                 groupId: groupList[index]["id"],
                               ))),
-                      leading: const Icon(Icons.group),
-                      title: Text(groupList[index]["name"]));
+                      leading: InkWell(
+                          onTap: () =>
+                              Navigator.of(context).push(MaterialPageRoute(
+                                builder: (context) => GroupInfo(
+                                  groupId: groupList[index]["id"],
+                                  groupName: groupList[index]["name"],
+                                ),
+                              )),
+                          child: ClipOval(
+                            child: SizedBox.fromSize(
+                              size: const Size.fromRadius(30),
+                              child: Image.network(
+                                profile[index],
+                                fit: BoxFit.fill,
+                              ),
+                            ),
+                          )),
+                      title: Text(groupList[index]["name"],
+                          style: const TextStyle(
+                              fontSize: 17, fontWeight: FontWeight.bold)));
                 },
               ),
             ),
@@ -104,8 +127,28 @@ class _GroupListState extends State<GroupList> {
         .then((value) {
       setState(() {
         groupList = value.docs;
-        _isLoading = false;
       });
     });
+
+    for (var group in groupList) {
+      await _firestore
+          .collection("groups")
+          .doc(group["id"])
+          .get()
+          .then((value) {
+        setState(() {
+          profile.add(value["profile"]);
+        });
+      });
+    }
+
+    _isLoading = false;
+  }
+
+  Future<String> getImage(String id) async {
+    final dis = await _firestore.collection("groups").doc(id).get();
+
+    String url = dis["profile"];
+    return url;
   }
 }
