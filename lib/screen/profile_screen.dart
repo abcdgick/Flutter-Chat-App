@@ -175,11 +175,45 @@ class _ProfilePageState extends State<ProfilePage> {
         .doc(_auth.currentUser!.uid)
         .update({dis.toLowerCase(): textEditingController.text});
 
+    updateGroup(dis.toLowerCase(), textEditingController.text);
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('$dis updated successfully'),
       ),
     );
+  }
+
+  void updateGroup(String key, String value) async {
+    QuerySnapshot querySnapshot = await _firestore
+        .collection("users")
+        .doc(_auth.currentUser!.uid)
+        .collection("groups")
+        .get();
+
+    List groupList = querySnapshot.docs
+        .map(
+          (e) => e.data(),
+        )
+        .toList();
+
+    for (int i = 0; i < groupList.length; i++) {
+      String id = groupList[i]["id"];
+      List memberList = [];
+      await _firestore.collection("groups").doc(id).get().then(((value) {
+        memberList = value["members"];
+      }));
+
+      for (var element in memberList) {
+        if (element["uid"] == _auth.currentUser!.uid) {
+          element[key] = value;
+        }
+      }
+
+      await _firestore.collection("groups").doc(id).update({
+        "members": memberList,
+      });
+    }
   }
 
   Widget vSpace(double d) {
@@ -313,9 +347,43 @@ class SaveImage extends StatelessWidget {
             .doc(doc)
             .update({"profile": imageUrl});
 
+        updateGroup("profile", imageUrl);
+
         return true;
       }
     }
     return false;
+  }
+
+  void updateGroup(String key, String value) async {
+    QuerySnapshot querySnapshot = await _firestore
+        .collection("users")
+        .doc(_auth.currentUser!.uid)
+        .collection("groups")
+        .get();
+
+    List groupList = querySnapshot.docs
+        .map(
+          (e) => e.data(),
+        )
+        .toList();
+
+    for (int i = 0; i < groupList.length; i++) {
+      String id = groupList[i]["id"];
+      List memberList = [];
+      await _firestore.collection("groups").doc(id).get().then(((value) {
+        memberList = value["members"];
+      }));
+
+      for (var element in memberList) {
+        if (element["uid"] == _auth.currentUser!.uid) {
+          element[key] = value;
+        }
+      }
+
+      await _firestore.collection("groups").doc(id).update({
+        "members": memberList,
+      });
+    }
   }
 }

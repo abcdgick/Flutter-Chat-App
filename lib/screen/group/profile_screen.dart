@@ -71,7 +71,9 @@ class _GroupProfileState extends State<GroupProfile> {
                                   ),
                                 )
                                     .then((value) {
-                                  setState(() {});
+                                  setState(() {
+                                    widget.groupName = snapshot.data!["name"];
+                                  });
                                 });
                               },
                               child: Hero(

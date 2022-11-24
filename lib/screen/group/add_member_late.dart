@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/container.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter_chat_app/screen/home_screen.dart';
+import 'package:flutter_chat_app/screen/user_screen.dart';
 
 class AddMemberLate extends StatefulWidget {
   final String groupId, groupName;
@@ -91,8 +92,27 @@ class _AddMemberLateState extends State<AddMemberLate> {
                 shrinkWrap: true,
                 itemBuilder: (context, index) {
                   return ListTile(
-                    onTap: () {},
-                    leading: const Icon(Icons.account_circle),
+                    onTap: () {
+                      Navigator.of(context).push(MaterialPageRoute(
+                        builder: (context) => UserProfile(
+                          profile: memberListTemp[index]["profile"],
+                          about: memberListTemp[index]["about"],
+                          name: memberListTemp[index]["name"],
+                          email: memberListTemp[index]["email"],
+                        ),
+                      ));
+                    },
+                    dense: true,
+                    visualDensity: const VisualDensity(vertical: 2),
+                    leading: ClipOval(
+                      child: SizedBox.fromSize(
+                        size: const Size.fromRadius(30),
+                        child: Image.network(
+                          memberListTemp[index]['profile'],
+                          fit: BoxFit.fill,
+                        ),
+                      ),
+                    ),
                     title: Text(memberListTemp[index]["name"]),
                     subtitle: Text(memberListTemp[index]["email"]),
                   );
@@ -137,6 +157,8 @@ class _AddMemberLateState extends State<AddMemberLate> {
               memberListTemp.add({
                 "name": userMap!["name"],
                 "email": userMap!["email"],
+                "about": userMap!["about"],
+                "profile": userMap!["profile"],
                 "uid": userMap!["uid"],
                 "isAdmin": false
               });
@@ -144,6 +166,8 @@ class _AddMemberLateState extends State<AddMemberLate> {
               newMember.add({
                 "name": userMap!["name"],
                 "email": userMap!["email"],
+                "about": userMap!["about"],
+                "profile": userMap!["profile"],
                 "uid": userMap!["uid"],
                 "isAdmin": false
               });

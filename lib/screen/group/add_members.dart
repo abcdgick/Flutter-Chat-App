@@ -5,6 +5,7 @@ import 'package:flutter/src/widgets/container.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter_chat_app/screen/group/list_group.dart';
 import 'package:flutter_chat_app/screen/home_screen.dart';
+import 'package:flutter_chat_app/screen/user_screen.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:uuid/uuid.dart';
 
@@ -89,8 +90,27 @@ class _AddMembersState extends State<AddMembers> {
               shrinkWrap: true,
               itemBuilder: (context, index) {
                 return ListTile(
-                  onTap: () {},
-                  leading: const Icon(Icons.account_circle),
+                  dense: true,
+                  visualDensity: const VisualDensity(vertical: 2),
+                  onTap: () {
+                    Navigator.of(context).push(MaterialPageRoute(
+                      builder: (context) => UserProfile(
+                        profile: memberList[index]["profile"],
+                        about: memberList[index]["about"],
+                        name: memberList[index]["name"],
+                        email: memberList[index]["email"],
+                      ),
+                    ));
+                  },
+                  leading: ClipOval(
+                    child: SizedBox.fromSize(
+                      size: const Size.fromRadius(30),
+                      child: Image.network(
+                        memberList[index]['profile'],
+                        fit: BoxFit.fill,
+                      ),
+                    ),
+                  ),
                   title: Text(memberList[index]["name"]),
                   subtitle: Text(memberList[index]["email"]),
                   trailing: IconButton(
@@ -156,6 +176,8 @@ class _AddMembersState extends State<AddMembers> {
               memberList.add({
                 "name": userMap!["name"],
                 "email": userMap!["email"],
+                "about": userMap!["about"],
+                "profile": userMap!["profile"],
                 "uid": userMap!["uid"],
                 "isAdmin": false
               });
@@ -190,6 +212,8 @@ class _AddMembersState extends State<AddMembers> {
         memberList.add({
           "name": value["name"],
           "email": value["email"],
+          "about": value["about"],
+          "profile": value["profile"],
           "uid": value["uid"],
           "isAdmin": true,
         });

@@ -12,28 +12,39 @@ import 'package:flutter_chat_app/screen/user_screen.dart';
 import 'package:image_picker_web/image_picker_web.dart';
 import 'package:uuid/uuid.dart';
 
-class GroupChatScreen extends StatelessWidget {
-  final String groupId, groupName;
+class GroupChatScreen extends StatefulWidget {
+  final String groupId;
+  String groupName;
   GroupChatScreen({required this.groupId, required this.groupName, super.key});
 
+  @override
+  State<GroupChatScreen> createState() => _GroupChatScreenState();
+}
+
+class _GroupChatScreenState extends State<GroupChatScreen> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
   final FirebaseAuth _auth = FirebaseAuth.instance;
+
   final TextEditingController msg = TextEditingController();
 
   Uint8List? imageFile;
+
   var tag;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(title: Text(groupName), actions: <Widget>[
+        appBar: AppBar(title: Text(widget.groupName), actions: <Widget>[
           IconButton(
-              onPressed: () => Navigator.of(context).push(MaterialPageRoute(
+              onPressed: () => Navigator.of(context)
+                  .push(MaterialPageRoute(
                     builder: (context) => GroupInfo(
-                      groupId: groupId,
-                      groupName: groupName,
+                      groupId: widget.groupId,
+                      groupName: widget.groupName,
                     ),
-                  )),
+                  ))
+                  .then((value) => changeName()),
               icon: const Icon(Icons.more_vert))
         ]),
         body: Column(
@@ -43,7 +54,7 @@ class GroupChatScreen extends StatelessWidget {
               StreamBuilder<QuerySnapshot>(
                 stream: _firestore
                     .collection("groups")
-                    .doc(groupId)
+                    .doc(widget.groupId)
                     .collection("chats")
                     .orderBy("time", descending: true)
                     .snapshots(),
@@ -82,7 +93,7 @@ class GroupChatScreen extends StatelessWidget {
 
     await _firestore
         .collection('groups')
-        .doc(groupId)
+        .doc(widget.groupId)
         .collection("chats")
         .add(messages);
   }
@@ -238,7 +249,7 @@ class GroupChatScreen extends StatelessWidget {
 
     await _firestore
         .collection('groups')
-        .doc(groupId)
+        .doc(widget.groupId)
         .collection('chats')
         .doc(fileName)
         .set({
@@ -258,7 +269,7 @@ class GroupChatScreen extends StatelessWidget {
         .catchError((error) async {
       await _firestore
           .collection('groups')
-          .doc(groupId)
+          .doc(widget.groupId)
           .collection('chats')
           .doc(fileName)
           .delete();
@@ -271,10 +282,24 @@ class GroupChatScreen extends StatelessWidget {
 
       await _firestore
           .collection('groups')
-          .doc(groupId)
+          .doc(widget.groupId)
           .collection('chats')
           .doc(fileName)
           .update({"message": imageUrl});
     }
+  }
+
+  Future changeName() async {
+    await _firestore
+        .collection("users")
+        .doc(_auth.currentUser!.uid)
+        .collection("groups")
+        .doc(widget.groupId)
+        .get()
+        .then(((value) {
+      setState(() {
+        widget.groupName = value["name"];
+      });
+    }));
   }
 }

@@ -6,10 +6,12 @@ import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter_chat_app/screen/group/add_member_late.dart';
 import 'package:flutter_chat_app/screen/group/profile_screen.dart';
 import 'package:flutter_chat_app/screen/home_screen.dart';
+import 'package:flutter_chat_app/screen/user_screen.dart';
 
 class GroupInfo extends StatefulWidget {
-  final String groupId, groupName;
-  const GroupInfo({required this.groupId, required this.groupName, super.key});
+  final String groupId;
+  String groupName;
+  GroupInfo({required this.groupId, required this.groupName, super.key});
 
   @override
   State<GroupInfo> createState() => _GroupInfoState();
@@ -59,7 +61,7 @@ class _GroupInfoState extends State<GroupInfo> {
                                         )),
                               )
                                   .then((value) {
-                                setState(() {});
+                                changeName();
                               }),
                             ),
                           ),
@@ -74,7 +76,7 @@ class _GroupInfoState extends State<GroupInfo> {
                       },
                     )
                   : IconButton(
-                      icon: Icon(Icons.more_vert),
+                      icon: const Icon(Icons.more_vert),
                       onPressed: () => Navigator.of(context).push(
                         MaterialPageRoute(
                             builder: (context) => GroupProfile(
@@ -117,8 +119,27 @@ class _GroupInfoState extends State<GroupInfo> {
               delegate: SliverChildBuilderDelegate(
             (context, index) {
               return ListTile(
-                onTap: () {},
-                leading: const Icon(Icons.account_circle),
+                dense: true,
+                visualDensity: const VisualDensity(vertical: 2),
+                onTap: () {
+                  Navigator.of(context).push(MaterialPageRoute(
+                    builder: (context) => UserProfile(
+                      profile: memberList[index]["profile"],
+                      about: memberList[index]["about"],
+                      name: memberList[index]["name"],
+                      email: memberList[index]["email"],
+                    ),
+                  ));
+                },
+                leading: ClipOval(
+                  child: SizedBox.fromSize(
+                    size: const Size.fromRadius(30),
+                    child: Image.network(
+                      memberList[index]['profile'],
+                      fit: BoxFit.fill,
+                    ),
+                  ),
+                ),
                 title: Text(memberList[index]["name"]),
                 subtitle: Text(memberList[index]["email"]),
                 trailing: memberList[index]["isAdmin"]
@@ -151,12 +172,9 @@ class _GroupInfoState extends State<GroupInfo> {
                               groupName: widget.groupName,
                               memberList: memberList,
                             )))
-                    .then((value) => ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Users Successfully Added'),
-                          ),
-                        ))
-                    .then((value) => getDetails());
+                    .then((value) {
+                  getDetails();
+                });
               })
           : const SizedBox(),
       bottomNavigationBar: BottomAppBar(
@@ -195,6 +213,20 @@ class _GroupInfoState extends State<GroupInfo> {
       }
     }
     return isAdmin;
+  }
+
+  Future changeName() async {
+    await _firestore
+        .collection("users")
+        .doc(_auth.currentUser!.uid)
+        .collection("groups")
+        .doc(widget.groupId)
+        .get()
+        .then(((value) {
+      setState(() {
+        widget.groupName = value["name"];
+      });
+    }));
   }
 
   void removeMember(int index) {

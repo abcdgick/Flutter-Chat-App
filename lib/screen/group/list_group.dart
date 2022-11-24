@@ -51,19 +51,26 @@ class _GroupListState extends State<GroupList> {
                   return ListTile(
                       dense: true,
                       visualDensity: const VisualDensity(vertical: 2),
-                      onTap: () => Navigator.of(context).push(MaterialPageRoute(
-                          builder: (context) => GroupChatScreen(
-                                groupName: groupList[index]["name"],
-                                groupId: groupList[index]["id"],
-                              ))),
+                      onTap: () => Navigator.of(context)
+                              .push(MaterialPageRoute(
+                                  builder: (context) => GroupChatScreen(
+                                        groupName: groupList[index]["name"],
+                                        groupId: groupList[index]["id"],
+                                      )))
+                              .then((value) {
+                            getGroup();
+                          }),
                       leading: InkWell(
-                          onTap: () =>
-                              Navigator.of(context).push(MaterialPageRoute(
+                          onTap: () => Navigator.of(context)
+                                  .push(MaterialPageRoute(
                                 builder: (context) => GroupInfo(
                                   groupId: groupList[index]["id"],
                                   groupName: groupList[index]["name"],
                                 ),
-                              )),
+                              ))
+                                  .then((value) {
+                                getGroup();
+                              }),
                           child: ClipOval(
                             child: SizedBox.fromSize(
                               size: const Size.fromRadius(30),
