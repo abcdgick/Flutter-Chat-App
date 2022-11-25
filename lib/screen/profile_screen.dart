@@ -51,20 +51,20 @@ class _ProfilePageState extends State<ProfilePage> {
       ),
       body: _isLoading
           ? const LoadingBody()
-          : SingleChildScrollView(
-              child: StreamBuilder<DocumentSnapshot>(
-                stream: _firestore
-                    .collection("users")
-                    .doc(_auth.currentUser!.uid)
-                    .snapshots(),
-                builder: (context, snapshot) {
-                  if (snapshot.hasData) {
-                    return Container(
-                      padding: const EdgeInsets.all(10.0),
-                      height: MediaQuery.of(context).size.height -
-                          kToolbarHeight -
-                          kBottomNavigationBarHeight,
-                      width: MediaQuery.of(context).size.width,
+          : StreamBuilder<DocumentSnapshot>(
+              stream: _firestore
+                  .collection("users")
+                  .doc(_auth.currentUser!.uid)
+                  .snapshots(),
+              builder: (context, snapshot) {
+                if (snapshot.hasData) {
+                  return Container(
+                    padding: const EdgeInsets.all(10.0),
+                    height: MediaQuery.of(context).size.height -
+                        kToolbarHeight -
+                        kBottomNavigationBarHeight,
+                    width: MediaQuery.of(context).size.width,
+                    child: SingleChildScrollView(
                       child: Column(
                         children: <Widget>[
                           InkWell(
@@ -105,12 +105,12 @@ class _ProfilePageState extends State<ProfilePage> {
                               snapshot.data!['email']),
                         ],
                       ),
-                    );
-                  } else {
-                    return Container();
-                  }
-                },
-              ),
+                    ),
+                  );
+                } else {
+                  return Container();
+                }
+              },
             ),
       bottomNavigationBar: BottomNavigationBar(
         backgroundColor: Colors.blueGrey,
@@ -347,7 +347,7 @@ class SaveImage extends StatelessWidget {
             .doc(doc)
             .update({"profile": imageUrl});
 
-        updateGroup("profile", imageUrl);
+        if (collection == "users") updateGroup("profile", imageUrl);
 
         return true;
       }

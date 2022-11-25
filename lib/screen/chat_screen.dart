@@ -8,6 +8,7 @@ import 'package:flutter/src/widgets/container.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter_chat_app/screen/user_screen.dart';
 import 'package:image_picker_web/image_picker_web.dart';
+import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
 
 class ChatScreen extends StatelessWidget {
@@ -96,6 +97,9 @@ class ChatScreen extends StatelessWidget {
                     itemBuilder: (context, index) {
                       Map<String, dynamic> map = snapshot.data!.docs[index]
                           .data() as Map<String, dynamic>;
+                      if (map['sendby'] != _auth.currentUser!.displayName) {
+                        read(snapshot.data!.docs[index].id);
+                      }
                       return messages(map, context);
                     },
                   ),
@@ -116,7 +120,8 @@ class ChatScreen extends StatelessWidget {
       "sendby": _auth.currentUser!.displayName,
       "message": msg.text,
       "type": "text",
-      "time": FieldValue.serverTimestamp()
+      "time": FieldValue.serverTimestamp(),
+      "status": "Delivered"
     };
 
     await _firestore
@@ -124,6 +129,15 @@ class ChatScreen extends StatelessWidget {
         .doc(chatRoomId)
         .collection("chats")
         .add(messages);
+  }
+
+  void read(String id) async {
+    await _firestore
+        .collection("chatroom")
+        .doc(chatRoomId)
+        .collection("chats")
+        .doc(id)
+        .update({"status": "Read"});
   }
 
   Widget messages(Map<String, dynamic> map, BuildContext context) {
@@ -183,7 +197,19 @@ class ChatScreen extends StatelessWidget {
                                   ),
                           ),
                         )),
-            )
+            ),
+            map['sendby'] == _auth.currentUser!.displayName
+                ? Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    child: Text(
+                        "${map['status']} ${map['time'] == null ? DateFormat.Hm().format(DateTime.now()) : DateFormat.Hm().format(map['time'].toDate())}",
+                        style: const TextStyle(
+                            color: Colors.black87, fontSize: 12)))
+                : Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    child: Text(DateFormat.Hm().format(map['time'].toDate()),
+                        style: const TextStyle(
+                            color: Colors.black87, fontSize: 12)))
           ],
         ));
   }
@@ -252,6 +278,7 @@ class ChatScreen extends StatelessWidget {
       "message": "",
       "type": "img",
       "time": FieldValue.serverTimestamp(),
+      "status": "Delivered"
     });
 
     var ref =

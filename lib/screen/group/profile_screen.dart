@@ -59,8 +59,7 @@ class _GroupProfileState extends State<GroupProfile> {
                           InkWell(
                               onTap: () {
                                 tag = snapshot.data!['profile'];
-                                Navigator.of(context)
-                                    .push(
+                                Navigator.of(context).push(
                                   MaterialPageRoute(
                                     builder: (_) => SaveImage(
                                         imageUrl: snapshot.data!['profile'],
@@ -69,12 +68,7 @@ class _GroupProfileState extends State<GroupProfile> {
                                         doc: widget.groupId,
                                         isAdmin: widget.isAdmin),
                                   ),
-                                )
-                                    .then((value) {
-                                  setState(() {
-                                    widget.groupName = snapshot.data!["name"];
-                                  });
-                                });
+                                );
                               },
                               child: Hero(
                                 tag: snapshot.data!['profile'],

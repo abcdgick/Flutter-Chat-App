@@ -10,6 +10,7 @@ import 'package:flutter_chat_app/screen/chat_screen.dart' as cs;
 import 'package:flutter_chat_app/screen/group/group_info.dart';
 import 'package:flutter_chat_app/screen/user_screen.dart';
 import 'package:image_picker_web/image_picker_web.dart';
+import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
 
 class GroupChatScreen extends StatefulWidget {
@@ -211,7 +212,14 @@ class _GroupChatScreenState extends State<GroupChatScreen> {
                               ),
                       ),
                     )),
-        )
+        ),
+        Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            child: Text(
+                map['time'] == null
+                    ? DateFormat.Hm().format(DateTime.now())
+                    : DateFormat.Hm().format(map['time'].toDate()),
+                style: const TextStyle(color: Colors.black87, fontSize: 12)))
       ],
     );
   }

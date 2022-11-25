@@ -62,6 +62,7 @@ class _GroupInfoState extends State<GroupInfo> {
                               )
                                   .then((value) {
                                 changeName();
+                                getDetails();
                               }),
                             ),
                           ),

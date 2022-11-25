@@ -123,7 +123,8 @@ class _GroupListState extends State<GroupList> {
         MaterialPageRoute(builder: (context) => _children[index]));
   }
 
-  void getGroup() async {
+  Future<void> getGroup() async {
+    profile = [];
     String uid = _auth.currentUser!.uid;
 
     await _firestore
@@ -132,9 +133,7 @@ class _GroupListState extends State<GroupList> {
         .collection("groups")
         .get()
         .then((value) {
-      setState(() {
-        groupList = value.docs;
-      });
+      groupList = value.docs;
     });
 
     for (var group in groupList) {
@@ -143,11 +142,11 @@ class _GroupListState extends State<GroupList> {
           .doc(group["id"])
           .get()
           .then((value) {
-        setState(() {
-          profile.add(value["profile"]);
-        });
+        profile.add(value["profile"]);
       });
     }
+
+    setState(() {});
 
     _isLoading = false;
   }
