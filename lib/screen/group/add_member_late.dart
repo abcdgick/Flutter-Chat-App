@@ -205,6 +205,16 @@ class _AddMemberLateState extends State<AddMemberLate> {
           .collection('groups')
           .doc(widget.groupId)
           .set({"name": widget.groupName, "id": widget.groupId});
+
+      await _firestore
+          .collection('groups')
+          .doc(widget.groupId)
+          .collection('chats')
+          .add({
+        "message": "${member['name']} joined the group",
+        "type": "notif",
+        "time": FieldValue.serverTimestamp(),
+      });
     }
   }
 }

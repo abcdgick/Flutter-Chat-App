@@ -261,6 +261,15 @@ class _GroupInfoState extends State<GroupInfo> {
   Future removeMember2(int index) async {
     String uid = memberList[index]["uid"];
 
+    await _firestore
+        .collection('groups')
+        .doc(widget.groupId)
+        .collection('chats')
+        .add({
+      "message": "${memberList[index]['name']} has been removed from the group",
+      "type": "notif",
+      "time": FieldValue.serverTimestamp(),
+    });
     setState(() {
       _isLoading = true;
       memberList.removeAt(index);
@@ -330,6 +339,16 @@ class _GroupInfoState extends State<GroupInfo> {
 
     await _firestore.collection("groups").doc(widget.groupId).update({
       "members": memberList,
+    });
+
+    await _firestore
+        .collection('groups')
+        .doc(widget.groupId)
+        .collection('chats')
+        .add({
+      "message": "${_auth.currentUser!.displayName} left the group",
+      "type": "notif",
+      "time": FieldValue.serverTimestamp(),
     });
 
     await _firestore
