@@ -158,7 +158,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               height: 180),
                           SizedBox(height: 40),
                           Text(
-                            "Created by Jonathan Krisna - 2020130017",
+                            "Created by JOHUFA Team",
                             style: TextStyle(
                                 fontWeight: FontWeight.bold, fontSize: 18),
                           )

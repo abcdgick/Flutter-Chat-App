@@ -24,13 +24,13 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               Image.network(
-                'https://firebasestorage.googleapis.com/v0/b/flutter-chat-app-jokris.appspot.com/o/Messages.png?alt=media&token=b086e62d-f6f8-4ccc-9874-327254147cdaimage/Messages.png',
+                'https://firebasestorage.googleapis.com/v0/b/flutter-chat-app-jokris.appspot.com/o/Logo.png?alt=media&token=98cb4fc1-d47b-423f-b767-cc1f2589442e',
                 height: 180,
                 width: 180,
               ),
               sep(15),
               const Text(
-                "Flutter Chat App",
+                "JOHUFA Chat App",
                 style: TextStyle(
                     color: Colors.blueGrey,
                     fontWeight: FontWeight.bold,
@@ -38,7 +38,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
               ),
               sep(10),
               const Text(
-                "A Flutter-Firebase Chatting App",
+                "A Demo For Our Chat App",
                 style: TextStyle(color: Colors.blueGrey, fontSize: 18),
               ),
               sep(70),
